@@ -1,0 +1,1 @@
+"""Parse GameMaker binary files."""
