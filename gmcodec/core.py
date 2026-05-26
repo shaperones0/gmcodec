@@ -23,7 +23,7 @@ def gmspr_extract_payload(
     reader = my_stream.BinaryReader(payload)
     version = reader.read_int()
     if version != VER_SPRITE:
-        raise ValueError(f'Expected bg_version {VER_SPRITE}, got {version}')
+        raise ValueError(f'Expected version {VER_SPRITE}, got {version}')
 
     origin_x = reader.read_int()
     origin_y = reader.read_int()
