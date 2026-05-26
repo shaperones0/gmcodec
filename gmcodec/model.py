@@ -13,10 +13,10 @@ class GmbckMeta:
     use_as_tile: int
     tile_width: int
     tile_height: int
-    h_offset: int
-    v_offset: int
-    h_sep: int
-    v_sep: int
+    tile_h_offset: int
+    tile_v_offset: int
+    tile_h_sep: int
+    tile_v_sep: int
     image_version: int
     width: int
     height: int
@@ -32,10 +32,10 @@ class GmbckMeta:
             use_as_tile=0,
             tile_width=16,
             tile_height=16,
-            h_offset=0,
-            v_offset=0,
-            h_sep=0,
-            v_sep=0,
+            tile_h_offset=0,
+            tile_v_offset=0,
+            tile_h_sep=0,
+            tile_v_sep=0,
             image_version=800,
             width=0,
             height=0,

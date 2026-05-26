@@ -15,9 +15,10 @@ This readme also outlines **format specs** and library docs, examples, etc.
   - [Background (`.gmbck`)](#background-gmbck)
 - [Usage](#usage)
 - [Reference](#reference)
+  - [`gmcodec.model`](#gmcodecmodel)
   - [`gmcodec.file`](#gmcodecfile)
   - [`gmcodec.core`](#gmcodeccore)
-  - [`gmcodec.model`](#gmcodecmodel)
+  - [`gmcodec.validate`](#gmcodecvalidate)
   - [`gmcodec.stream`](#gmcodecstream)
   
 ## Format
@@ -80,7 +81,7 @@ Otherwise, it's as weasy as that:
 
 ```python
 from pathlib import Path
-from gmcodec import file, core, stream, model
+from gmcodec import file, core, stream, model, validate
 from PIL import Image, ImageEnhance
 
 # read sprite
@@ -110,12 +111,22 @@ for i, bgra_bytes in enumerate(frames_bytes):
     # don't forget to swap back to BGRA
     processed_frames.append(img.tobytes("raw", "BGRA"))
 
+# validate changes
+validate.gmspr_validate(meta, processed_frames)
 # save back to disk
 new_payload = core.gmspr_build_payload(meta, processed_frames)
 Path("output/sprPlayerGhost.gmspr").write_bytes(file.file_pack(new_payload))
 ```
 
 ## Reference
+
+### `gmcodec.model`
+Metadata models; loosely follows internal format: [Format](#format).
+- `GmsprMeta`
+- `GmbckMeta`
+
+Both provide `.default()` constructor with values for "empty" assets.
+
 ### `gmcodec.file`
 Handles GM's file wrapping (`1234321` magic and zlib compression).
 - `file_unpack(raw_bytes: bytes) -> bytes`: strip the header and decompress the payload; usually takes raw file bytes.
@@ -128,12 +139,13 @@ Struct parsers. No validation is done on incoming parameters.
 - `gmbck_extract_payload(payload: bytes) -> tuple[GmbckMeta, bytes]`: parse uncompressed background payload into metadata and BGRA frame.
 - `gmbck_build_payload(meta: GmbckMeta, pixels: bytes) -> bytes`: reconstruct an uncompressed background payload.
 
-### `gmcodec.model`
-Metadata models; loosely follows internal format: [Format](#format).
-- `GmsprMeta`
-- `GmbckMeta`
+### `gmcodec.validate`
+Validates metadata and image bytes.
 
-Both provide `.default()` constructor with values for "empty" assets.
+All methods raise `CodecValidationError` on validation fail.
+
+- `gmspr_validate(meta: GmsprMeta, frames: Sequence[bytes])`: check sprite metadata.
+- `gmbck_validate(meta: my_model.GmbckMeta, pixels: bytes)`: check background metadata.
 
 ### `gmcodec.stream`
 Encoded struct cursors `BinaryReader` and `BinaryWriter`. 

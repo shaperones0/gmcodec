@@ -6,6 +6,7 @@ import pytest
 
 from gmcodec.core import gmbck_build_payload, gmbck_extract_payload
 from gmcodec.file import file_pack, file_unpack
+from gmcodec.validate import gmbck_validate
 
 DIR_DATA = Path(__file__).parent / 'data'
 FILES_BG = list(DIR_DATA.glob('*.gmbck'))
@@ -17,6 +18,7 @@ def test_gmbck_roundtrip(filepath: Path) -> None:
     raw_file_bytes = filepath.read_bytes()
     original_payload = file_unpack(raw_file_bytes)
     meta, img = gmbck_extract_payload(original_payload)
+    gmbck_validate(meta, img)
     reconstructed_payload = gmbck_build_payload(meta, img)
     assert original_payload == reconstructed_payload, (
         f'Struct mismatch for {filepath.name}'

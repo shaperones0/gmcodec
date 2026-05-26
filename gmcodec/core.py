@@ -1,4 +1,4 @@
-"""Struct parsing.
+"""Struct parsing and building.
 
 No validation is done on incoming parameters.
 """
@@ -15,15 +15,13 @@ VER_BACKGROUND = 710
 def gmspr_extract_payload(
     payload: bytes,
 ) -> tuple[my_model.GmsprMeta, list[bytes]]:
-    """Extract metadata and subimages from sprite payload.
+    """Extract metadata and subimages from an uncompressed sprite payload.
 
     :param payload: Sprite payload.
     :return: (Metadata, subimages).
     """
     reader = my_stream.BinaryReader(payload)
     version = reader.read_int()
-    if version != VER_SPRITE:
-        raise ValueError(f'Expected version {VER_SPRITE}, got {version}')
 
     origin_x = reader.read_int()
     origin_y = reader.read_int()
@@ -63,11 +61,11 @@ def gmspr_extract_payload(
 def gmspr_build_payload(
     meta: my_model.GmsprMeta, frames: col.Iterable[bytes]
 ) -> bytes:
-    """Construct sprite payload out of metadata and subimages.
+    """Construct an uncompressed sprite payload out of metadata and subimages.
 
     :param meta: Metadata.
-    :param frames: Subimages.
-    :return: Constsructed payload.
+    :param frames: Subimages (raw BGRA bytes).
+    :return: Constructed payload.
     """
     writer = my_stream.BinaryWriter()
     writer.write_int(meta.version)
@@ -95,17 +93,13 @@ def gmspr_build_payload(
 
 
 def gmbck_extract_payload(payload: bytes) -> tuple[my_model.GmbckMeta, bytes]:
-    """Extract metadata and image from background payload.
+    """Extract metadata and image from an uncompressed background payload.
 
     :param payload: Background payload.
-    :return: (Metadata, image).
+    :return: (Metadata, image bytes).
     """
     reader = my_stream.BinaryReader(payload)
     bg_version = reader.read_int()
-    if bg_version != VER_BACKGROUND:
-        raise ValueError(
-            f'Expected bg_version {VER_BACKGROUND}, got {bg_version}'
-        )
 
     use_as_tile = reader.read_int()
     tile_width = reader.read_int()
@@ -120,12 +114,6 @@ def gmbck_extract_payload(payload: bytes) -> tuple[my_model.GmbckMeta, bytes]:
     height = reader.read_int()
     size = reader.read_int()
 
-    expected_size = width * height * 4
-    if size != expected_size:
-        raise ValueError(
-            f'Warning: Expected pixel size {expected_size}, got {size}'
-        )
-
     pixels = reader.read_bytes(size)
 
     meta = my_model.GmbckMeta(
@@ -133,10 +121,10 @@ def gmbck_extract_payload(payload: bytes) -> tuple[my_model.GmbckMeta, bytes]:
         use_as_tile=use_as_tile,
         tile_width=tile_width,
         tile_height=tile_height,
-        h_offset=h_offset,
-        v_offset=v_offset,
-        h_sep=h_sep,
-        v_sep=v_sep,
+        tile_h_offset=h_offset,
+        tile_v_offset=v_offset,
+        tile_h_sep=h_sep,
+        tile_v_sep=v_sep,
         image_version=image_version,
         width=width,
         height=height,
@@ -145,10 +133,10 @@ def gmbck_extract_payload(payload: bytes) -> tuple[my_model.GmbckMeta, bytes]:
 
 
 def gmbck_build_payload(meta: my_model.GmbckMeta, pixels: bytes) -> bytes:
-    """Construct background payload out of metadata and image.
+    """Construct an uncompressed background payload out of metadata and image.
 
     :param meta: Metadata.
-    :param pixels: Image.
+    :param pixels: Image (raw BGRA bytes).
     :return: Constructed payload.
     """
     writer = my_stream.BinaryWriter()
@@ -158,10 +146,10 @@ def gmbck_build_payload(meta: my_model.GmbckMeta, pixels: bytes) -> bytes:
     writer.write_int(meta.use_as_tile)
     writer.write_int(meta.tile_width)
     writer.write_int(meta.tile_height)
-    writer.write_int(meta.h_offset)
-    writer.write_int(meta.v_offset)
-    writer.write_int(meta.h_sep)
-    writer.write_int(meta.v_sep)
+    writer.write_int(meta.tile_h_offset)
+    writer.write_int(meta.tile_v_offset)
+    writer.write_int(meta.tile_h_sep)
+    writer.write_int(meta.tile_v_sep)
 
     # Image Struct
     writer.write_int(meta.image_version)

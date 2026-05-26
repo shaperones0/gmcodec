@@ -6,6 +6,7 @@ import pytest
 
 from gmcodec.core import gmspr_build_payload, gmspr_extract_payload
 from gmcodec.file import file_pack, file_unpack
+from gmcodec.validate import gmspr_validate
 
 DIR_DATA = Path(__file__).parent / 'data'
 FILES_SPRITE = list(DIR_DATA.glob('*.gmspr'))
@@ -19,6 +20,7 @@ def test_gmspr_roundtrip(filepath: Path) -> None:
     raw_file_bytes = filepath.read_bytes()
     original_payload = file_unpack(raw_file_bytes)
     meta, frames = gmspr_extract_payload(original_payload)
+    gmspr_validate(meta, frames)
     reconstructed_payload = gmspr_build_payload(meta, frames)
     assert original_payload == reconstructed_payload, (
         f'Struct mismatch for {filepath.name}'
