@@ -1,9 +1,8 @@
 # gmcodec
 
 Encoding, modifying and decoding GameMaker 8 external resource files:
-- `.gmbck` done
-- `.gmspr` done
-- `.gmres` TODO
+- `.gmbck`
+- `.gmspr`
 
 This readme also outlines **format specs** and library docs, examples, etc.
 
@@ -129,7 +128,7 @@ Both provide `.default()` constructor with values for "empty" assets.
 
 ### `gmcodec.file`
 Handles GM's file wrapping (`1234321` magic and zlib compression).
-- `file_unpack(raw_bytes: bytes) -> bytes`: strip the header and decompress the payload; usually takes raw file bytes.
+- `file_unpack(raw_bytes: bytes) -> bytes`: strip the header and decompress the payload; takes raw `.gmspr` or `.gmbck` file bytes.
 - `file_pack(payload_bytes: bytes, compression_level: int = 9) -> bytes`: compress the payload and wrap it into GM's header; outputs ready-to-be-written file bytes.
 
 ### `gmcodec.core`
